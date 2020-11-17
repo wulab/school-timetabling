@@ -1,0 +1,59 @@
+package schooltimetabling;
+
+import java.util.List;
+import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScoreHolder;
+
+// Rule Language Reference
+// https://docs.jboss.org/drools/release/7.45.0.Final/drools-docs/html_single/index.html#_droolslanguagereferencechapter
+
+global HardSoftScoreHolder scoreHolder;
+
+// Hard constraints
+
+// A room can have at most one lesson at the same time
+rule "roomOccupancy"
+  when
+    Lesson($id: id, $timeslot: timeslot, $room: room, timeslot != null, room != null)
+    and Lesson(id > $id, timeslot == $timeslot, room == $room, timeslot != null, room != null)
+  then
+    scoreHolder.addHardConstraintMatch(kcontext, -1);
+end
+
+// A teacher can teach at most one lesson at the same time
+rule "teacherAvailability"
+  when
+    Lesson($id: id, $timeslot: timeslot, $teacher: teacher, timeslot != null, room != null)
+    and Lesson(id > $id, timeslot == $timeslot, teacher == $teacher, timeslot != null, room != null)
+  then
+    scoreHolder.addHardConstraintMatch(kcontext, -1);
+end
+
+// A student can attend at most one lesson at the same time
+rule "studentParticipation"
+  when
+    Lesson($id: id, $timeslot: timeslot, $studentGroup: studentGroup, timeslot != null, room != null)
+    and Lesson(id > $id, timeslot == $timeslot, studentGroup == $studentGroup, timeslot != null, room != null)
+  then
+    scoreHolder.addHardConstraintMatch(kcontext, -1);
+end
+
+// Soft constraints
+
+// A teacher prefers to teach every lesson in a single room
+rule "singleRoomPreference"
+  when
+    Lesson($id: id, $room: room, $teacher: teacher, timeslot != null, room != null)
+    and Lesson(id > $id, room != $room, teacher == $teacher, timeslot != null, room != null)
+  then
+    scoreHolder.addSoftConstraintMatch(kcontext, -1);
+end
+
+// A teacher prefers to teach sequential lessons and dislikes gaps between lessons
+rule "sequentialLessonsPreference"
+  when
+    Lesson($id: id, $timeslot1: timeslot, $teacher: teacher, timeslot != null, room != null)
+    and Lesson(id > $id, $timeslot2: timeslot, teacher == $teacher, timeslot != null, room != null)
+    and eval( !Timeslot.isSequential($timeslot1, $timeslot2) )
+  then
+    scoreHolder.addSoftConstraintMatch(kcontext, -1);
+end

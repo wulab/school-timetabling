@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<solver>
+  <!-- Domain model configuration -->
+  <solutionClass>schooltimetabling.TimeTable</solutionClass>
+  <entityClass>schooltimetabling.Lesson</entityClass>
+
+  <!-- Score configuration -->
+  <scoreDirectorFactory>
+    <scoreDrl>schooltimetabling/schoolTimetablingConstraints.drl</scoreDrl>
+  </scoreDirectorFactory>
+
+  <!-- Optimization algorithms configuration -->
+  <termination>
+    <secondsSpentLimit>30</secondsSpentLimit>
+  </termination>
+</solver>
